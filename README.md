@@ -1,3 +1,1 @@
 # AstroPage
-
-prueba
