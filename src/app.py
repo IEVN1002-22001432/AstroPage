@@ -19,9 +19,9 @@ def register():
         else:
             cursor = conexion.connection.cursor()
             sql= """insert into users (Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono)
-            values ('{0}','{1}','{2}','{3}','{4}', '{5}', '', '')""".format(request.json['Correo'],
+            values ('{0}','{1}','{2}','{3}','{4}', '', '', '')""".format(request.json['Correo'],
                 request.json['Username'],request.json['Nombre'],request.json['Contrasena'],
-                request.json['FechaNac'], request.json['Foto'])
+                request.json['FechaNac'])
             cursor.execute(sql)
             conexion.connection.commit()
             return jsonify({'mensaje': "Usuario registrado", 'exito': True})
@@ -90,7 +90,7 @@ def perfilUpdate(id):
         return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
 
 #Delete
-@app.route('/perfil/<id>', methods=['PUT'])
+@app.route('/perfil/<id>', methods=['DELETE'])
 def perfilDelete(id):
     try:
         user = read_user_bd(id)
@@ -116,7 +116,7 @@ def perfilDelete(id):
 def catalog():
     try:
         cursor = conexion.connection.cursor()
-        sql = "SELECT ID_Juego, Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificacion FROM games"
+        sql = "SELECT ID_Juego, Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificación FROM games"
         cursor.execute(sql)
         data = cursor.fetchall()
         games=[]
@@ -130,7 +130,7 @@ def catalog():
         return jsonify({'mensaje': "Error al listar juegos:{}"+str(ex), 'exito': False})
 
 #listar juego especifico
-@app.route('catalogo/<id>', methods=['GET'])
+@app.route('/catalogo/<id>', methods=['GET'])
 def game(id):
     try:
         game = read_game_bd(id)
