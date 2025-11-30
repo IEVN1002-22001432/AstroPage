@@ -18,15 +18,24 @@ def register():
             return jsonify({'mensaje':"Alumno ya existe, no se puede duplicar", 'exito': False})
         else:
             cursor = conexion.connection.cursor()
-            sql= """insert into users (Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono)
-            values ('{0}','{1}','{2}','{3}','{4}', '', '', '')""".format(request.json['Correo'],
-                request.json['Username'],request.json['Nombre'],request.json['Contrasena'],
-                request.json['FechaNac'])
-            cursor.execute(sql)
+            sql = """
+                INSERT INTO users 
+                (Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono)
+                VALUES (%s, %s, %s, %s, %s, '', '', '')
+            """
+            valores = (
+                request.json['Correo'],
+                request.json['Username'],
+                request.json['Nombre'],
+                request.json['Contrasena'],
+                request.json['FechaNac']
+            )
+
+            cursor.execute(sql, valores)
             conexion.connection.commit()
             return jsonify({'mensaje': "Usuario registrado", 'exito': True})
     except Exception as ex:
-        return jsonify({'mensaje': "Error", 'exito': False})
+        return jsonify({'mensaje': "Error "+str(ex)+" "+str(request.json), 'exito': False})
 
 #login
 @app.route('/login', methods=['POST'])
@@ -41,7 +50,7 @@ def login():
             else:
                 return jsonify({'user':user, 'mensaje': "Inicio de sesión exitoso", 'exito': True})
     except Exception as ex:
-        return jsonify({'mensaje': "Error", 'exito': False})
+        return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 #listar usuarios
 @app.route('/busqueda-de-amigos', methods=['GET'])
@@ -79,7 +88,7 @@ def perfilUpdate(id):
         if user != None:
             cursor = conexion.connection.cursor()
             sql = """UPDATE users SET Correo = '{0}', Username = '{1}', Nombre = '{2}', Descripcion = '{3}', 
-            Telefono = '{4}', Foto{5} WHERE ID_User = {6}""".format(request.json['Correo'], request.json['Username'], request.json['Nombre']
+            Telefono = '{4}', Foto = '{5}' WHERE ID_User = {6}""".format(request.json['Correo'], request.json['Username'], request.json['Nombre'], request.json['Descripcion']
                                                     , request.json['Telefono'], request.json['Foto'], id)
             cursor.execute(sql)
             conexion.connection.commit()
@@ -104,6 +113,59 @@ def perfilDelete(id):
             return jsonify({'mensaje': "Perfil no encontrado", 'exito': False})
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
+
+
+
+
+
+# ----- REPORTES -----
+
+#@app.route('/', methods=['POST'])
+
+
+
+
+
+
+
+
+
+# ----- RECUPERACIÓN ----- 
+
+
+
+
+
+
+
+
+
+# ----- AUTENTICACIÓN ----- 
+
+
+
+
+
+
+
+
+
+
+# ----- DATOS PERSONALES -----
+
+
+
+
+
+
+
+
+
+
+# ----- VENTAS -----
+
+
+
 
 
 
@@ -167,7 +229,7 @@ def read_user_bd(id):
 def read_user_bd_byMail(correo):
     try:
         cursor = conexion.connection.cursor()
-        sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users WHERE Correo = {0}".format(correo)
+        sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users WHERE Correo = '{0}'".format(correo)
         cursor.execute(sql)
         datos = cursor.fetchone()
 
