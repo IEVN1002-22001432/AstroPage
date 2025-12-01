@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 from config import config
+from random import randint
+from time import sleep
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}})
@@ -33,6 +35,9 @@ def register():
 
             cursor.execute(sql, valores)
             conexion.connection.commit()
+
+            createPersonalData(cursor.lastrowid)
+
             return jsonify({'mensaje': "Usuario registrado", 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex)+" "+str(request.json), 'exito': False})
@@ -114,60 +119,155 @@ def perfilDelete(id):
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
-
-
-
-
 # ----- REPORTES -----
 
-#@app.route('/', methods=['POST'])
+@app.route('/reporte', methods=['POST'])
+def createReport():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """
+            INSERT INTO reports 
+            (Correo, Tema, Descripcion, Imagen)
+            VALUES (%s, %s, %s, %s)
+        """
 
-
-
-
-
-
-
-
+        valores = (
+            request.json['Correo'],
+            request.json['Tema'],
+            request.json['Descripcion'],
+            request.json['Imagen']
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Reporte registrado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 # ----- RECUPERACIÓN ----- 
 
+@app.route('/recuperar-cuenta', methods=['POST'])
+def createRecoveryRequest():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """
+            INSERT INTO recovery 
+            (Correo, Contrasena)
+            VALUES (%s, %s)
+        """
 
-
-
-
-
-
-
+        valores = (
+            request.json['Correo'],
+            request.json['Contrasena']
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Peticiion de recuperación registrada", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 # ----- AUTENTICACIÓN ----- 
 
+@app.route('/codigoveri', methods=['POST'])
+def createAuthRequest():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """
+            INSERT INTO auth 
+            (ID_User, Code)
+            VALUES (%s, %s)
+        """
 
+        valores = (
+            request.json['ID_User'],
+            randint(100000, 999999)
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        deleteAfterDelay(cursor.lastrowid)
+        return jsonify({'mensaje': "Peticiion de recuperación registrada", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
+def deleteAfterDelay(id):
+    sleep(900)
+    try:
+        cursor = conexion.connection.cursor()
+        sql = "DELETE FROM auth WHERE ID_Auth = {0}".format(id)
+        cursor.execute(sql)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Codigo eliminado correctamente", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
-
-
-
-
-
+#Falta función para validar código
 
 # ----- DATOS PERSONALES -----
 
+@app.route('/pago/<id_user>', methods=['PUT'])
+def updatePersonalData(id_user):
+    try:
+        personal_data = read_personal_data_bd(id_user)
+        if personal_data != None:
+            cursor = conexion.connection.cursor()
+            sql = """UPDATE personal_data SET Tipo = '{0}', NumeroTarjeta = '{1}', Vigencia = '{2}', CVC = {3}, 
+            NombrePropietario = '{4}', ApellidoPropietario = '{5}', Pais = '{6}', CP = {7} WHERE ID_User = {8}""".format(
+            request.json['Tipo'], request.json['NumeroTarjeta'], request.json['Vigencia'], request.json['CVC']
+            , request.json['NombrePropietario'], request.json['ApellidoPropietario'], request.json['Pais'], request.json['CP'], id_user)
+            cursor.execute(sql)
+            conexion.connection.commit()
+            return jsonify({'mensaje': "Datos personales actualizados", 'exito': True})
+        else:
+            return jsonify({'mensaje': "Usuario no encontrado", 'exito': False})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})        
 
-
-
-
-
-
-
-
+def createPersonalData(id_user):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """INSERT INTO personal_data (ID_User, Tipo, NumeroTarjeta, Vigencia, CVC, NombrePropietario, ApellidoPropietario, Pais, CP)
+        values ({0}, '', '', '', 0, '', '', '', 0)""".format(id_user)
+        cursor.execute(sql)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Personal Data creado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 # ----- VENTAS -----
 
+@app.route('/sales', methods=['POST'])
+def registerSale():
+    try:
+        if read_user_bd(request.json['ID_User']) == None or read_game_bd(request.json['ID_Juego']) == None:
+            return jsonify({'mensaje': "No se ha encontrado un usuario o juego", 'exito': False})
 
+        cursor = conexion.connection.cursor()
+        sql = """INSERT INTO sales ('ID_User', 'Fecha', 'ID_Juego', 'PrecioTotal', 'Descuento')""".format(
+            request.json['ID_User'], request.json['Fecha'], request.json['ID_Juego'], request.json['PrecioTotal'], request.json['Descuento'])
+        
+        cursor.execute(sql)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Personal Data creado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
+@app.route('/historial/<id_user>', methods=['GET'])
+def viewSalesHistory(id_user):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_Sale, ID_User, Fecha, ID_Juego, PrecioTotal, Descuento FROM sales WHERE ID_User = {0}""".format(id_user)
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        sales=[]
+        for row in data:
+            sale = {'ID_Sale': row[0], 'ID_User': row[1],
+                      'Fecha': row[2], 'ID_Juego': row[3],
+                      'PrecioTotal': row[4], 'Descuento': row[5]}
+            sales.append(sale)
+        return jsonify({'sales': sales, 'mensaje':"Usuarios encontrados", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error al listar alumnos:{}"+str(ex), 'exito':False})
 
-
+# ----- AMIGOS -----
 
 
 
@@ -203,11 +303,7 @@ def game(id):
     except Exception as ex:
         return jsonify({'mensaje': "Error", 'exito': False})
 
-
-
-
-
-#lecturas individuales
+# ----- lecturas individuales -----
 def read_user_bd(id):
     try:
         cursor = conexion.connection.cursor()
@@ -261,6 +357,24 @@ def read_game_bd(id):
     except Exception as ex: 
         raise ex
     
+def read_personal_data_bd(id_user):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = "SELECT ID_Data, ID_User, Tipo, NumeroTarjeta, Vigencia, CVC, NombrePropietario, ApellidoPropietario, Pais, CP FROM personal_data WHERE ID_User = {}".format(id_user)
+        cursor.execute(sql)
+        data = cursor.fetchone()
+
+        if data != None:
+            personal_data = {'ID_Data': data[0], 'ID_User': data[1], 'Tipo': data[2],
+                             'NumeroTarjeta': data[3], 'Vigencia': data[4], 'CVC': data[5],
+                             'NombrePropietario': data[6], 'ApellidoPropietario':data[7], 'Pais': data[8],
+                             'CP': data[9]}
+            return personal_data
+        else:
+            return None
+    except Exception as ex:
+        raise ex
+
 def pagina_no_encontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>", 404
 
