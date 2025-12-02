@@ -161,7 +161,7 @@ def createRecoveryRequest():
         )
         cursor.execute(sql, valores)
         conexion.connection.commit()
-        return jsonify({'mensaje': "Peticiion de recuperación registrada", 'exito': True})
+        return jsonify({'mensaje': "Peticion de recuperación registrada", 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
@@ -184,7 +184,7 @@ def createAuthRequest():
         cursor.execute(sql, valores)
         conexion.connection.commit()
         deleteAfterDelay(cursor.lastrowid)
-        return jsonify({'mensaje': "Peticiion de recuperación registrada", 'exito': True})
+        return jsonify({'mensaje': "Peticion de recuperación registrada", 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
@@ -199,7 +199,25 @@ def deleteAfterDelay(id):
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
-#Falta función para validar código
+@app.route('/correoveri', methods=['POST'])
+def checkAuthCode(correo):
+    try:
+        user = read_user_bd_byMail(request.json['Correo'])
+        
+        cursor = conexion.connection.cursor()
+        
+        sql = "SELECT Code FROM auth WHERE ID_User = {0}".format(user['ID_User'])
+        cursor.execute(sql)
+        data = cursor.fetchone()
+        if data == None:
+            return jsonify({'mensaje': "No se encontró registro", 'exito': False})
+        if data['Code'] == request.json['Codigo']:
+            return jsonify({'mensaje': "El usuario ha sido autenticado con éxito", 'exito': True})
+        else:
+            return jsonify({'mensaje': "Codigo incorrecto", 'exito': False})
+
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 # ----- DATOS PERSONALES -----
 
@@ -269,7 +287,82 @@ def viewSalesHistory(id_user):
 
 # ----- AMIGOS -----
 
+@app.route('/friends/<id>', methods=['GET'])
+def viewFriendsList(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_User1, ID_User2, Status, Fecha FROM friends WHERE (ID_User1 = {0} OR ID_User2 = {0}) AND Status = 2""".format(id)
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        friends=[]
+        for row in data:
+            request = {'ID_User1': row[0], 'ID_User2': row[1], 'Status': row[2], 'Fecha': row[3]}
+            friends.append(request)
+        return jsonify({'friends': friends, 'mensaje': 'Mostrando solicitudes de amistad', 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
 
+@app.route('/friendrequests/<id>', methods=['GET'])
+def viewFriendsRequestsList():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_User1, Status, Fecha FROM friends WHERE ID_User2 = {0} AND Status = 1""".format(id)
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        requests=[]
+        for row in data:
+            request = {'ID_User': row[0], 'Status': row[1], 'Fecha': row[2]}
+            requests.append(request)
+        return jsonify({'requests': requests, 'mensaje': 'Mostrando solicitudes de amistad', 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
+
+@app.route('/blocked/<id>', methods=['GET'])
+def viewBlockedList():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_User2, Status, Fecha FROM friends WHERE ID_User1 = {0} AND Status = 4""".format(id)
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        requests=[]
+        for row in data:
+            request = {'ID_User': row[0], 'Status': row[1], 'Fecha': row[2]}
+            requests.append(request)
+        return jsonify({'requests': requests, 'mensaje': 'Mostrando solicitudes de amistad', 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
+
+@app.route('/friendrequest', methods=['POST'])
+def sendFriendRequest():
+    try:
+        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 1, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
+
+@app.route('/friends', methods=['POST'])
+def acceptFriend():
+    try:
+        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 2, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
+
+@app.route('/blocked', methods=['POST'])
+def block():
+    try:
+        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 4, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
+
+@app.route('/cancelrequest', methods=['POST'])
+def cancelRequest():
+    try:
+        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 3, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 # ----- JUEGOS -----
 
@@ -289,7 +382,7 @@ def catalog():
             games.append(game)
         return jsonify({'games': games, 'mensaje': "Mostrando juegos", 'exito': True})
     except Exception as ex:
-        return jsonify({'mensaje': "Error al listar juegos:{}"+str(ex), 'exito': False})
+        return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
 
 #listar juego especifico
 @app.route('/catalogo/<id>', methods=['GET'])
@@ -374,6 +467,59 @@ def read_personal_data_bd(id_user):
             return None
     except Exception as ex:
         raise ex
+
+def read_friend_bd(id_user1, id_user2):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_User1, ID_User2, Status, Fecha WHERE ID_User1 = {0} AND ID_User2 = {1}""".format(id_user1, id_user2)
+        cursor.execute(sql)
+        data = cursor.fetchone()
+
+        if data != None:
+            friend_data = {'ID_User1': data[0], 'ID_User2': data[1], 'Status': data[2], 'Fecha': data[3]}
+            return friend_data
+        else:
+            return None
+    except Exception as ex:
+        raise ex
+
+def update_friend_status(id_user1, id_user2, status, fecha):
+    try:
+        if read_user_bd(id_user1) == None or read_user_bd(request.json[id_user2]) == None:
+            return jsonify({'mensaje': "No se ha encontrado uno de los usuarios", 'exito': False})
+        
+        friend_data = read_friend_bd(id_user1, id_user2)
+
+        cursor = conexion.connection.cursor()
+        
+        if friend_data == None:
+            sql = """INSERT INTO friends ('ID_User1', 'ID_User2, 'Status, 'Fecha')
+            values (%s, %s, %s, %s)"""
+
+            valores = (
+            id_user1,
+            id_user2,
+            status,
+            fecha
+            )
+            cursor.execute(sql, valores)
+            conexion.connection.commit()
+            return jsonify({'mensaje': "Amigo registrado", 'exito': True})
+        else:
+            sql = """UPDATE friends SET Status = %s, Fecha = %s WHERE ID_User1 = %s AND ID_User2 = %s"""
+            
+            valores = (
+                status,
+                fecha,
+                id_user1,
+                id_user2
+            )
+            cursor.execute(sql, valores)
+            conexion.connection.commit()
+            return jsonify({'mensaje': 'Se ha actualizado la fila de amigos con éxito', 'exito': True})
+
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 def pagina_no_encontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>", 404
