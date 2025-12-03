@@ -362,7 +362,7 @@ def registerSale():
             request.json['Descuento']
         )
         
-        cursor.execute(sql)
+        cursor.execute(sql, valores)
         conexion.connection.commit()
         return jsonify({'mensaje': "Personal Data creado", 'exito': True})
     except Exception as ex:
