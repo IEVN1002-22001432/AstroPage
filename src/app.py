@@ -406,32 +406,32 @@ def viewBlockedList():
 @app.route('/friendrequest', methods=['POST'])
 def sendFriendRequest():
     try:
-        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 1, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+        status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 1, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito " + status['mensaje'] , 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 @app.route('/friends', methods=['POST'])
 def acceptFriend():
     try:
-        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 2, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+        status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 2, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 @app.route('/blocked', methods=['POST'])
 def block():
     try:
-        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 4, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+        status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 4, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 @app.route('/cancelrequest', methods=['POST'])
 def cancelRequest():
     try:
-        update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 3, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito", 'exito': True})
+        status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 3, request.json['Fecha'])
+        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
