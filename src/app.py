@@ -352,8 +352,15 @@ def registerSale():
             return jsonify({'mensaje': "No se ha encontrado un usuario o juego", 'exito': False})
 
         cursor = conexion.connection.cursor()
-        sql = """INSERT INTO sales ('ID_User', 'Fecha', 'ID_Juego', 'PrecioTotal', 'Descuento')""".format(
-            request.json['ID_User'], request.json['Fecha'], request.json['ID_Juego'], request.json['PrecioTotal'], request.json['Descuento'])
+        sql = """INSERT INTO sales (ID_User, Fecha, ID_Juego, PrecioTotal, Descuento)
+        VALUES (%s, %s, %s, %s)"""
+        valores = (
+            request.json['ID_User'],
+            request.json['Fecha'],
+            request.json['ID_Juego'],
+            request.json['PrecioTotal'],
+            request.json['Descuento']
+        )
         
         cursor.execute(sql)
         conexion.connection.commit()
@@ -490,7 +497,7 @@ def game(id):
         return jsonify({'mensaje': "Error", 'exito': False})
 
 # ----- lecturas individuales -----
-def read_user_bd(id, status):
+def read_user_bd(id, status = 0):
     try:
         cursor = conexion.connection.cursor()
         sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users WHERE ID_User = {0}".format(id)
