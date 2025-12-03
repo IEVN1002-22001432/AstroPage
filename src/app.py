@@ -63,7 +63,10 @@ def login():
 def search():
     try:
         cursor = conexion.connection.cursor()
-        sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users"
+        if request.json == None:
+            sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users"
+        else:
+            sql = """SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users WHERE NOT ID_User = {0}""".format(request.json['ID_User'])
         cursor.execute(sql)
         data = cursor.fetchall()
 
