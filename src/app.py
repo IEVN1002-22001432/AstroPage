@@ -58,6 +58,7 @@ def login():
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
 #listar usuarios
+#Añadir filtros!!!!!!
 @app.route('/busqueda-de-amigos', methods=['GET'])
 def search():
     try:
@@ -65,14 +66,71 @@ def search():
         sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users"
         cursor.execute(sql)
         data = cursor.fetchall()
-        users=[]
-        for row in data:
-            user = {'ID_User': row[0], 'Correo': row[1],
+
+        if request.json['ID_User'] == None:
+            users=[]
+            for row in data:
+                user = {'ID_User': row[0], 'Correo': row[1],
                       'Username': row[2], 'Nombre': row[3],
                       'Contrasena': row[4], 'FechaNac': row[5],
-                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8]}
-            users.append(user)
-        return jsonify({'users': users, 'mensaje':"Usuarios encontrados", 'exito': True})
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 0}
+                users.append(user)
+            return jsonify({'users': users, 'mensaje':"Usuarios encontrados", 'exito': True})
+        else:
+            users=[]
+            for row in data:
+                frienddata_sended = read_friend_bd(request.json['ID_User'], row[0])
+                frienddata_received = read_friend_bd(row[0], request.json['ID_User'])
+
+                if frienddata_sended['Status'] == 1:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 2}
+                    users.append(user)
+                    continue
+                elif frienddata_sended['Status'] == 2:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 5}
+                    users.append(user)
+                    continue
+                elif frienddata_sended['Status'] == 4:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 4}
+                    users.append(user)
+                    continue
+                elif frienddata_received['Status'] == 1:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 3}
+                    users.append(user)
+                    continue
+                elif frienddata_received['Status'] == 4:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 6}
+                    users.append(user)
+                    continue
+                else:
+                    user = {'ID_User': row[0], 'Correo': row[1],
+                      'Username': row[2], 'Nombre': row[3],
+                      'Contrasena': row[4], 'FechaNac': row[5],
+                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
+                      'Status': 1}
+                    users.append(user)
+            return jsonify({'users': users, 'mensaje': 'Mostrando usuarios encontrados', 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error al listar alumnos:{}"+str(ex), 'exito':False})
 
