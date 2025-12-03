@@ -309,7 +309,7 @@ def checkAuthCode():
         data = cursor.fetchone()
         if data == None:
             return jsonify({'mensaje': "No se encontró registro", 'exito': False})
-        if data['Code'] == request.json['Codigo']:
+        if data[0] == request.json['Code']:
             return jsonify({'mensaje': "El usuario ha sido autenticado con éxito", 'exito': True})
         else:
             return jsonify({'mensaje': "Codigo incorrecto", 'exito': False})
@@ -358,7 +358,7 @@ def registerSale():
 
         cursor = conexion.connection.cursor()
         sql = """INSERT INTO sales (ID_User, Fecha, ID_Juego, PrecioTotal, Descuento)
-        VALUES (%s, %s, %s, %s)"""
+        VALUES (%s, %s, %s, %s, %s)"""
         valores = (
             request.json['ID_User'],
             request.json['Fecha'],
