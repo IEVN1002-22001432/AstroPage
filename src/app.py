@@ -407,7 +407,7 @@ def viewBlockedList():
 def sendFriendRequest():
     try:
         status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 1, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito " + status['mensaje'] , 'exito': True})
+        return jsonify({'mensaje': "Actualizado con exito " + status.get_json()['mensaje'] , 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
@@ -415,7 +415,7 @@ def sendFriendRequest():
 def acceptFriend():
     try:
         status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 2, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
+        return jsonify({'mensaje': "Actualizado con exito "+ status.get_json()['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
@@ -423,7 +423,7 @@ def acceptFriend():
 def block():
     try:
         status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 4, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
+        return jsonify({'mensaje': "Actualizado con exito "+ status.get_json()['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
@@ -431,7 +431,7 @@ def block():
 def cancelRequest():
     try:
         status = update_friend_status(request.json['ID_User1'], request.json['ID_User2'], 3, request.json['Fecha'])
-        return jsonify({'mensaje': "Actualizado con exito "+ status['mensaje'], 'exito': True})
+        return jsonify({'mensaje': "Actualizado con exito "+ status.get_json()['mensaje'], 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error "+str(ex), 'exito': False})
 
