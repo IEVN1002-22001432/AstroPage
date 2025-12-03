@@ -556,7 +556,7 @@ def read_friend_bd(id_user1, id_user2):
 
 def update_friend_status(id_user1, id_user2, status, fecha):
     try:
-        if read_user_bd(id_user1) == None or read_user_bd(request.json[id_user2]) == None:
+        if read_user_bd(id_user1) == None or read_user_bd(id_user2) == None:
             return jsonify({'mensaje': "No se ha encontrado uno de los usuarios", 'exito': False})
         
         friend_data = read_friend_bd(id_user1, id_user2)
@@ -564,7 +564,7 @@ def update_friend_status(id_user1, id_user2, status, fecha):
         cursor = conexion.connection.cursor()
         
         if friend_data == None:
-            sql = """INSERT INTO friends ('ID_User1', 'ID_User2, 'Status, 'Fecha')
+            sql = """INSERT INTO friends (ID_User1, ID_User2, Status, Fecha)
             values (%s, %s, %s, %s)"""
 
             valores = (
