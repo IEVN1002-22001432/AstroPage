@@ -145,11 +145,36 @@ def search():
         return jsonify({'mensaje': "Error al listar alumnos:{}"+str(ex), 'exito':False})
 
 #mostrar usuario específico
-@app.route('/perfil/<id>', methods=['GET'])
+@app.route('/perfil/<id>', methods=['POST'])
 def perfil(id):
     try:
-        user = read_user_bd(id)
-        return jsonify({'user': user, 'mensaje':"Usuario encontrado", 'exito': True})
+        user = read_user_bd(id, 0)
+        if request.json == None:
+            return jsonify({'user': user, 'mensaje':"Usuario encontrado", 'exito': True})
+        else:
+            frienddata_sended = read_friend_bd(request.json['ID_User'], id)
+            frienddata_received = read_friend_bd(id, request.json['ID_User'])
+
+            if frienddata_sended is None:
+                frienddata_sended = {'Status': 0}
+
+            if frienddata_received is None:
+                frienddata_received = {'Status': 0}
+            
+            if frienddata_sended['Status'] == 1:
+                user['Status'] = 2
+            elif frienddata_sended['Status'] == 2:
+                user['Status'] = 5
+            elif frienddata_sended['Status'] == 4:
+                user['Status'] = 4
+            elif frienddata_received['Status'] == 1:
+                user['Status'] = 3
+            elif frienddata_received['Status'] == 4:
+                user['Status'] = 6
+            else:
+                user['Status'] = 1
+            
+            return jsonify({'user': user, 'mensaje':"Usuario encontrado", 'exito': True})
     except Exception as ex:
         return jsonify({'mensaje': "Error al listar alumnos:{}"+str(ex), 'exito':False})
 
@@ -268,7 +293,7 @@ def deleteAfterDelay(id):
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 @app.route('/correoveri', methods=['POST'])
-def checkAuthCode(correo):
+def checkAuthCode():
     try:
         user = read_user_bd_byMail(request.json['Correo'])
         
@@ -465,7 +490,7 @@ def game(id):
         return jsonify({'mensaje': "Error", 'exito': False})
 
 # ----- lecturas individuales -----
-def read_user_bd(id):
+def read_user_bd(id, status):
     try:
         cursor = conexion.connection.cursor()
         sql = "SELECT ID_User, Correo, Username, Nombre, Contrasena, FechaNac, Foto, Descripcion, Telefono FROM users WHERE ID_User = {0}".format(id)
@@ -476,7 +501,7 @@ def read_user_bd(id):
             user = {'ID_User': datos[0], 'Correo': datos[1],
                       'Username': datos[2], 'Nombre': datos[3],
                       'Contrasena': datos[4], 'FechaNac': datos[5],
-                      'Foto': datos[6], 'Descripcion': datos[7], 'Telefono': datos[8]}
+                      'Foto': datos[6], 'Descripcion': datos[7], 'Telefono': datos[8], 'Status': status}
             return user
         else:
             return None
