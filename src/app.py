@@ -195,6 +195,21 @@ def perfilUpdate(id):
             return jsonify({'mensaje': "Perfil no encontrado", 'exito': False})
     except Exception as ex:
         return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
+    
+@app.route('/contrasena/<id>', methods=['PUT'])
+def contrasenaUpdate(id):
+    try:
+        user = read_user_bd(id)
+        if user != None:
+            cursor = conexion.connection.cursor()
+            sql = """UPDATE users SET Contrasena = '{0}' WHERE ID_User = {1}""".format(request.json['Contrasena'], id)
+            cursor.execute(sql)
+            conexion.connection.commit()
+            return jsonify({'mensaje': "Contraseña actualizada", 'exito': True})
+        else:
+            return jsonify({'mensaje': "Perfil no encontrado", 'exito': False})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
 
 #Delete
 @app.route('/perfil/<id>', methods=['DELETE'])
