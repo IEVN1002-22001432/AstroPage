@@ -263,6 +263,11 @@ def createRecoveryRequest():
 @app.route('/codigoveri', methods=['POST'])
 def createAuthRequest():
     try:
+        user = read_user_bd_byMail(request.json['Correo'])
+
+        if user == None:
+            return jsonify({'mensaje': "No se ha encontrado un usuario con ese correo", 'exito': False})
+
         cursor = conexion.connection.cursor()
         sql = """
             INSERT INTO auth 
@@ -271,7 +276,7 @@ def createAuthRequest():
         """
 
         valores = (
-            request.json['ID_User'],
+            user['ID_User'],
             randint(100000, 999999)
         )
         cursor.execute(sql, valores)
