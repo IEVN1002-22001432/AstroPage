@@ -408,7 +408,7 @@ def viewFriendsList(id):
         return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
 
 @app.route('/friendrequests/<id>', methods=['GET'])
-def viewFriendsRequestsList():
+def viewFriendsRequestsList(id):
     try:
         cursor = conexion.connection.cursor()
         sql = """SELECT ID_User1, Status, Fecha FROM friends WHERE ID_User2 = {0} AND Status = 1""".format(id)
