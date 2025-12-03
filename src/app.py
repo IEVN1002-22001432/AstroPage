@@ -59,7 +59,7 @@ def login():
 
 #listar usuarios
 #Añadir filtros!!!!!!
-@app.route('/busqueda-de-amigos', methods=['GET'])
+@app.route('/busqueda-de-amigos', methods=['POST'])
 def search():
     try:
         cursor = conexion.connection.cursor()
@@ -494,7 +494,7 @@ def read_user_bd_byMail(correo):
 def read_game_bd(id):
     try:
         cursor = conexion.connection.cursor()
-        sql = "SELECT ID_Juego, Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificacion FROM games WHERE ID_Juego = {0}".format(id)
+        sql = "SELECT ID_Juego, Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificación FROM games WHERE ID_Juego = {0}".format(id)
         cursor.execute(sql)
         datos = cursor.fetchone()
 
@@ -529,7 +529,7 @@ def read_personal_data_bd(id_user):
 def read_friend_bd(id_user1, id_user2):
     try:
         cursor = conexion.connection.cursor()
-        sql = """SELECT ID_User1, ID_User2, Status, Fecha WHERE ID_User1 = {0} AND ID_User2 = {1}""".format(id_user1, id_user2)
+        sql = """SELECT ID_User1, ID_User2, Status, Fecha FROM friends WHERE ID_User1 = {0} AND ID_User2 = {1}""".format(id_user1, id_user2)
         cursor.execute(sql)
         data = cursor.fetchone()
 
