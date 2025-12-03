@@ -86,14 +86,11 @@ def search():
                 frienddata_sended = read_friend_bd(request.json['ID_User'], row[0])
                 frienddata_received = read_friend_bd(row[0], request.json['ID_User'])
 
-                if frienddata_received == None or frienddata_sended == None:
-                    user = {'ID_User': row[0], 'Correo': row[1],
-                      'Username': row[2], 'Nombre': row[3],
-                      'Contrasena': row[4], 'FechaNac': row[5],
-                      'Foto': row[6], 'Descripcion': row[7], 'Telefono': row[8],
-                      'Status': 1}
-                    users.append(user)
-                    continue
+                if frienddata_sended is None:
+                    frienddata_sended = {'Status': 0}
+
+                if frienddata_received is None:
+                    frienddata_received = {'Status': 0}
 
                 if frienddata_sended['Status'] == 1:
                     user = {'ID_User': row[0], 'Correo': row[1],
