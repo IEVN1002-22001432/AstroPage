@@ -257,18 +257,18 @@ def adminViewReports():
         cursor = conexion.connection.cursor()
         if request.json == None:
             sql = """
-            SELECT Correo, Tema, Descripcion, Imagen FROM reports"""
+            SELECT ID_Ticket, Correo, Tema, Descripcion, Imagen FROM reports"""
         else:
             sql = """
-            SELECT Correo, Tema, Descripcion, Imagen FROM reports WHERE Tema = '{0}'""".format()
+            SELECT ID_Ticket ,Correo, Tema, Descripcion, Imagen FROM reports WHERE Tema = '{0}'""".format(request.json['Tema'])
         
         cursor.execute(sql)
         data = cursor.fetchall()
 
         reports=[]
         for row in data:
-            report = {'Correo': row[0], 'Tema': row[1],
-                      'Descripcion': row[2], 'Imagen': row[3]}
+            report = { 'ID_Ticket' : row[0], 'Correo': row[1], 'Tema': row[2],
+                      'Descripcion': row[3], 'Imagen': row[4]}
             reports.append(report)
         return jsonify({'reports': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
 
