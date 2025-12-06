@@ -251,6 +251,30 @@ def createReport():
     except Exception as ex:
         return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
+@app.route('/admin/reportes', methods=['POST'])
+def adminViewReports():
+    try:
+        cursor = conexion.connection.cursor()
+        if request.json == None:
+            sql = """
+            SELECT Correo, Tema, Descripcion, Imagen FROM reports"""
+        else:
+            sql = """
+            SELECT Correo, Tema, Descripcion, Imagen FROM reports WHERE Tema = '{0}'""".format()
+        
+        cursor.execute(sql)
+        data = cursor.fetchall()
+
+        reports=[]
+        for row in data:
+            report = {'Correo': row[0], 'Tema': row[1],
+                      'Descripcion': row[2], 'Imagen': row[3]}
+            reports.append(sale)
+        return jsonify({'reporst': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
+
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
+
 # ----- RECUPERACIÓN ----- 
 
 @app.route('/recuperar-cuenta', methods=['POST'])
@@ -393,6 +417,23 @@ def viewSalesHistory(id_user):
     try:
         cursor = conexion.connection.cursor()
         sql = """SELECT ID_Sale, ID_User, Fecha, ID_Juego, PrecioTotal, Descuento FROM sales WHERE ID_User = {0}""".format(id_user)
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        sales=[]
+        for row in data:
+            sale = {'ID_Sale': row[0], 'ID_User': row[1],
+                      'Fecha': row[2], 'ID_Juego': row[3],
+                      'PrecioTotal': row[4], 'Descuento': row[5]}
+            sales.append(sale)
+        return jsonify({'sales': sales, 'mensaje':"Usuarios encontrados", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error al listar alumnos:{}"+str(ex), 'exito':False})
+    
+@app.route('/admin/ventas', methods=['GET'])
+def adminViewSales():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """SELECT ID_Sale, ID_User, Fecha, ID_Juego, PrecioTotal, Descuento FROM sales"""
         cursor.execute(sql)
         data = cursor.fetchall()
         sales=[]
