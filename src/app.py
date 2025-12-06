@@ -269,8 +269,8 @@ def adminViewReports():
         for row in data:
             report = {'Correo': row[0], 'Tema': row[1],
                       'Descripcion': row[2], 'Imagen': row[3]}
-            reports.append(sale)
-        return jsonify({'reporst': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
+            reports.append(report)
+        return jsonify({'reports': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
 
     except Exception as ex:
         return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
