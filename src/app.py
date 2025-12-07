@@ -545,6 +545,72 @@ def catalog():
     except Exception as ex:
         return jsonify({'mensaje': "Error al listar juegos: "+str(ex), 'exito': False})
 
+@app.route('/agregarjuego', methods = ['POST'])
+def addGame():
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """
+            INSERT INTO games 
+            (Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificacion)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+
+        valores = (
+            request.json['Nombre'],
+            request.json['Descripcion'],
+            request.json['Imagen'],
+            request.json['Precio'],
+            request.json['Descuento'],
+            request.json['Genero'],
+            request.json['Plataforma'],
+            request.json['Clasificacion']
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Juego registrado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
+    
+@app.route('/actualizarjuego/<id>', methods = ['PUT'])
+def updateGame(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """UPDATE games SET Nombre = %s, Descripcion = %s, Imagen = %s, Precio = %s,
+        Descuento = %s, Genero = %s, Plataforma = %s, Clasificacion = %s
+          WHERE ID_Juego = %s"""
+
+        valores = (
+            request.json['Nombre'],
+            request.json['Descripcion'],
+            request.json['Imagen'],
+            request.json['Precio'],
+            request.json['Descuento'],
+            request.json['Genero'],
+            request.json['Plataforma'],
+            request.json['Clasificacion'],
+            id
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Juego registrado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
+
+@app.route('/eliminarjuego/<id>', methods=['DELETE'])
+def deleteGame(id):
+    try:
+        game = read_game_bd(id)
+        if game != None:
+            cursor = conexion.connection.cursor()
+            sql = "DELETE FROM games WHERE ID_Juego = {0}".format(id)
+            cursor.execute(sql)
+            conexion.connection.commit()
+            return jsonify({'mensaje': "Juego eliminado correctamente", 'exito': True})
+        else:
+            return jsonify({'mensaje': "Juego no encontrado", 'exito': False})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
+
 #listar juego especifico
 @app.route('/catalogo/<id>', methods=['GET'])
 def game(id):
