@@ -569,7 +569,7 @@ def addGame():
         cursor = conexion.connection.cursor()
         sql = """
             INSERT INTO games 
-            (Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificacion)
+            (Nombre, Descripcion, Imagen, Precio, Descuento, Genero, Plataforma, Clasificación)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
 
@@ -594,7 +594,7 @@ def updateGame(id):
     try:
         cursor = conexion.connection.cursor()
         sql = """UPDATE games SET Nombre = %s, Descripcion = %s, Imagen = %s, Precio = %s,
-        Descuento = %s, Genero = %s, Plataforma = %s, Clasificacion = %s
+        Descuento = %s, Genero = %s, Plataforma = %s, Clasificación = %s
           WHERE ID_Juego = %s"""
 
         valores = (
