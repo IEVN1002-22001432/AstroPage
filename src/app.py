@@ -235,15 +235,16 @@ def createReport():
         cursor = conexion.connection.cursor()
         sql = """
             INSERT INTO reports 
-            (Correo, Tema, Descripcion, Imagen)
-            VALUES (%s, %s, %s, %s)
+            (Correo, Tema, Descripcion, Imagen, Status)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         valores = (
             request.json['Correo'],
             request.json['Tema'],
             request.json['Descripcion'],
-            request.json['Imagen']
+            request.json['Imagen'],
+            0
         )
         cursor.execute(sql, valores)
         conexion.connection.commit()
@@ -257,10 +258,10 @@ def adminViewReports():
         cursor = conexion.connection.cursor()
         if request.json == None:
             sql = """
-            SELECT ID_Ticket, Correo, Tema, Descripcion, Imagen FROM reports"""
+            SELECT ID_Ticket, Correo, Tema, Descripcion, Imagen, Status FROM reports"""
         else:
             sql = """
-            SELECT ID_Ticket ,Correo, Tema, Descripcion, Imagen FROM reports WHERE Tema = '{0}'""".format(request.json['Tema'])
+            SELECT ID_Ticket ,Correo, Tema, Descripcion, Imagen, Status FROM reports WHERE Tema = '{0}'""".format(request.json['Tema'])
         
         cursor.execute(sql)
         data = cursor.fetchall()
@@ -268,12 +269,29 @@ def adminViewReports():
         reports=[]
         for row in data:
             report = { 'ID_Ticket' : row[0], 'Correo': row[1], 'Tema': row[2],
-                      'Descripcion': row[3], 'Imagen': row[4]}
+                      'Descripcion': row[3], 'Imagen': row[4], 'Status': row[5]}
             reports.append(report)
         return jsonify({'reports': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
 
     except Exception as ex:
         return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
+    
+@app.route('/admin/reports/<id>', methods=['PUT'])
+def adminChangeStatusReports(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = """UPDATE reports SET Status = %s
+          WHERE ID_Ticket = %s"""
+
+        valores = (
+            request.json['Status'],
+            id
+        )
+        cursor.execute(sql, valores)
+        conexion.connection.commit()
+        return jsonify({'mensaje': "Reporte actualizado", 'exito': True})
+    except Exception as ex:
+        return jsonify({'mensaje': "Error {0}".format(ex), 'exito': False})
 
 # ----- RECUPERACIÓN ----- 
 
