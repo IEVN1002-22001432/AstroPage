@@ -256,7 +256,7 @@ def createReport():
 def adminViewReports():
     try:
         cursor = conexion.connection.cursor()
-        if request.json == None:
+        if request.json['Tema'] == "":
             sql = """
             SELECT ID_Ticket, Correo, Tema, Descripcion, Imagen, Status FROM reports"""
         else:
@@ -271,7 +271,7 @@ def adminViewReports():
             report = { 'ID_Ticket' : row[0], 'Correo': row[1], 'Tema': row[2],
                       'Descripcion': row[3], 'Imagen': row[4], 'Status': row[5]}
             reports.append(report)
-        return jsonify({'reports': reports, 'mensaje':"Usuarios encontrados", 'exito': True})
+        return jsonify({'reports': reports, 'mensaje':"Reportes encontrados", 'exito': True})
 
     except Exception as ex:
         return jsonify({'mensaje': "Error {0} ".format(ex), 'exito': False})
